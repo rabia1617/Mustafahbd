@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>Mustafa</title>
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #111;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      overflow: hidden;
+    }
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      justify-content: center;
+    }
+    .flowers-area {
+      position: absolute;
+      left: 50%;
+      top: 24%;
+      transform: translateX(-50%);
+      width: 340px;
+      height: 300px;
+      pointer-events: none;
+      z-index: 8;
+      display: flex;
+      justify-content: center;
+      align-items: end;
+    }
+    .flowers-area.flowers-show {
+      top: 12%;
+    }
+    .flower {
+      opacity: 0;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transition: all 1.3s cubic-bezier(.55,2.04,.37,.91);
+      transform: translate(-50%, 80px) scale(0.7);
+    }
+    .flower.show {
+      opacity: 1;
+      /* Aşağıda transform, JS ile inline yazılacak (her çiçek için farklı açı ve yatay kayma) */
+    }
+    .petals {
+      width: 54px;
+      height: 54px;
+      position: relative;
+      margin: 0 auto;
+    }
+    .petal {
+      width: 22px;
+      height: 40px;
+      position: absolute;
+      left: 16px;
+      top: 3px;
+      border-radius: 50% 50% 40% 40%;
+      opacity: .93;
+      transform-origin: bottom center;
+    }
+    .f1 .petal { background: #ffd600; box-shadow: 0 0 4px #ffec80; }
+    .f2 .petal { background: #1a237e; box-shadow: 0 0 4px #283593; }
+    .f3 .petal { background: #fff; box-shadow: 0 0 4px #bdbdbd; }
+    .f4 .petal { background: #ffd600; box-shadow: 0 0 4px #fffde7; }
+    .f5 .petal { background: #1a237e; box-shadow: 0 0 4px #3f51b5; }
+    .petal:nth-child(1) { transform: rotate(0deg);}
+    .petal:nth-child(2) { transform: rotate(72deg);}
+    .petal:nth-child(3) { transform: rotate(144deg);}
+    .petal:nth-child(4) { transform: rotate(216deg);}
+    .petal:nth-child(5) { transform: rotate(288deg);}
+    .center {
+      width: 18px;
+      height: 18px;
+      background: #ffd600;
+      border-radius: 50%;
+      border: 2px solid #fff59d;
+      position: absolute;
+      left: 18px;
+      top: 18px;
+      z-index: 2;
+    }
+    .stem {
+      width: 7px;
+      height: 60px;
+      background: linear-gradient(to bottom, #8dc34d 60%, #386723 100%);
+      border-radius: 5px;
+      margin: 0 auto;
+      margin-top: -7px;
+    }
+    .gift-box-3d {
+      width: 220px;
+      height: 130px;
+      perspective: 900px;
+      margin-bottom: 15px;
+      cursor: pointer;
+      position: relative;
+      z-index: 10;
+      transition: transform 1.2s cubic-bezier(.53,2.04,.37,.91);
+    }
+    .gift-box-3d.box-move {
+      transform: translateY(120px);
+    }
+    .box {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      transform-style: preserve-3d;
+      transition: transform 1s cubic-bezier(.53,2.04,.37,.91);
+    }
+    .box.open {
+      transform: translateY(40px) rotateX(15deg) scale(1.03);
+    }
+    .box-body {
+      position: absolute;
+      width: 100%;
+      height: 68%;
+      bottom: 0;
+      left: 0;
+      background: linear-gradient(145deg, #1a237e 75%, #3949ab 100%);
+      border-radius: 0 0 22px 22px;
+      box-shadow: 0 22px 32px #0008, 0 10px 0 #2227 inset;
+      border: 4px solid #0d1334;
+      border-top: none;
+      z-index: 1;
+    }
+    .box-lid {
+      position: absolute;
+      width: 110%;
+      height: 40%;
+      background: linear-gradient(120deg, #283593 60%, #1a237e 100%);
+      top: -15%;
+      left: -5%;
+      border-radius: 20px 20px 36px 36px / 60px 60px 18px 18px;
+      box-shadow: 0 17px 32px #0d1334a0, 0 2px 0 #fff2 inset;
+      border: 4px solid #0d1334;
+      border-bottom: none;
+      z-index: 2;
+      transform-origin: center bottom;
+      transition: transform 1s cubic-bezier(.53,2.04,.37,.91);
+      transition-delay: .08s;
+    }
+    .box.open .box-lid {
+      transform: rotateX(-80deg);
+      transition-delay: 0s;
+    }
+    .ribbon-vertical {
+      position: absolute;
+      width: 28px;
+      height: 100%;
+      background: #ffd600;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 3;
+      border-radius: 10px;
+      box-shadow: 0 0 18px #ffd60055;
+    }
+    .ribbon-horizontal {
+      position: absolute;
+      width: 100%;
+      height: 20px;
+      background: #ffd600;
+      top: 38%;
+      left: 0;
+      border-radius: 7px;
+      z-index: 3;
+      box-shadow: 0 0 18px #ffd60044;
+    }
+    .bow {
+      position: absolute;
+      top: 5px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+      display: flex;
+      gap: 2px;
+    }
+    .bow-part {
+      width: 28px;
+      height: 28px;
+      background: #ffd600;
+      border-radius: 65% 30% 65% 30% / 45% 85% 45% 85%;
+      transform: rotate(-18deg);
+      box-shadow: 0 0 8px #ffd60055;
+    }
+    .bow-part:last-child {
+      transform: rotate(18deg) scaleX(-1);
+    }
+    .message {
+      color: #ffd600;
+      font-size: 2.0em;
+      font-weight: bold;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 16px #000, 0 0px 1px #333;
+      margin-top: 200px;
+      opacity: 0;
+      transition: opacity 1.2s cubic-bezier(.55,2.04,.37,.91);
+      min-height: 40px;
+      text-align: center;
+      line-height: 1.3;
+      z-index: 999;
+    }
+    .message.visible {
+      opacity: 1;
+    }
+    @media (max-width: 400px) {
+      .gift-box-3d { width: 94vw; }
+      .flowers-area { width: 94vw; }
+      .message { font-size: 1.1em;}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="flowers-area" id="flowers">
+      <div class="flower f1">
+        <div class="petals">
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="center"></div>
+        </div>
+        <div class="stem"></div>
+      </div>
+      <div class="flower f2">
+        <div class="petals">
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="center"></div>
+        </div>
+        <div class="stem"></div>
+      </div>
+      <div class="flower f3">
+        <div class="petals">
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="center"></div>
+        </div>
+        <div class="stem"></div>
+      </div>
+      <div class="flower f4">
+        <div class="petals">
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="center"></div>
+        </div>
+        <div class="stem"></div>
+      </div>
+      <div class="flower f5">
+        <div class="petals">
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="petal"></div>
+          <div class="center"></div>
+        </div>
+        <div class="stem"></div>
+      </div>
+    </div>
+    <div class="gift-box-3d" id="box" title="Kutuyu Aç!">
+      <div class="box" id="boxBody">
+        <div class="box-lid"></div>
+        <div class="box-body"></div>
+        <div class="ribbon-vertical"></div>
+        <div class="ribbon-horizontal"></div>
+        <div class="bow">
+          <div class="bow-part"></div>
+          <div class="bow-part"></div>
+        </div>
+      </div>
+    </div>
+    <div class="message" id="message"></div>
+  </div>
+  <script>
+    // Buket şekli için açı ve mesafe ayarları
+    const flowerConfigs = [
+      { angle: -36, x: -110, y: -60, scale: 1 },
+      { angle: -18, x: -55,  y: -80, scale: 1.08 },
+      { angle: 0,   x: 0,    y: -100, scale: 1.12 },
+      { angle: 18,  x: 55,   y: -80, scale: 1.06 },
+      { angle: 36,  x: 110,  y: -60, scale: 1 }
+    ];
+
+    const box = document.getElementById('box');
+    const boxBody = document.getElementById('boxBody');
+    const flowersArea = document.getElementById('flowers');
+    const flowers = document.querySelectorAll('.flower');
+    const message = document.getElementById('message');
+    let opened = false;
+
+    // İlk başta tüm çiçeklerin transformunu ayarla (gizli konumda)
+    flowers.forEach((flower, i) => {
+      flower.style.transform = `translate(-50%, 80px) scale(0.7)`;
+    });
+
+    box.addEventListener('click', function() {
+      if (opened) return;
+      boxBody.classList.add('open');
+      flowersArea.classList.add('flowers-show');
+      box.classList.add('box-move');
+      // Çiçek animasyonları ve transformlarını buket gibi yay
+      flowers.forEach((flower, i) => {
+        setTimeout(() => {
+          const cfg = flowerConfigs[i];
+          flower.classList.add('show');
+          flower.style.transform = `translate(calc(-50% + ${cfg.x}px), ${cfg.y}px) scale(${cfg.scale}) rotate(${cfg.angle}deg)`;
+        }, 400 + i * 220);
+      });
+      // Mesajı geç göster
+     setTimeout(() => {
+  message.innerHTML = `
+    <span style="display:block;font-size:0.95em;font-weight:600;letter-spacing:1.1px;color:#ffd600;line-height:1.1;margin-bottom:6px;text-shadow: 0 2px 10px #000, 0 0px 1px #333;">
+      İyi ki Doğdun Canım!
+    </span>
+    <span style="display:block;font-size:0.50em;font-weight:normal;color:#ffd600;line-height:1.35;text-shadow: 0 1px 7px #222;">
+      Sarı lacivert en güzel yaşların olsun!<br>
+      Nice mutlu, sağlıklı, Fenerbahçeli yıllara 💛💙
+    </span>
+  `;
+  message.classList.add('visible');
+}, 1420);
+      opened = true;
+    });
+  </script>
+</body>
+</html> 
