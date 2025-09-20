@@ -1,2 +1,0 @@
-# Mustafahbd
-Doğum günü
